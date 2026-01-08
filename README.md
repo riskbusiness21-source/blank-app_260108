@@ -1,19 +1,9 @@
-# 🎈 Blank app template
+# 초등 곱셈 학습 앱
 
-A simple Streamlit app template for you to modify!
+이 저장소는 간단한 Streamlit 애플리케이션을 포함합니다.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+실행 방법:
 
-### How to run it on your own machine
-
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+```bash
+streamlit run streamlit_app.py
+```

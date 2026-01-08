@@ -1,121 +1,84 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import datetime
 
-# 한 페이지에 Streamlit 주요 요소들을 모아 보여주는 데모 앱
-# 각 블록 위에 한국어 주석(각주)을 달아, 공부할 수 있도록 구성했습니다.
+# 초등학교 곱셈 학습 앱
+# 1) 사용자가 두 숫자를 입력 (행 x 열 또는 피연산자 두 개)
+# 2) 사용자가 선택한 그림(이모지)으로 곱셈 결과를 시각화
+# 3) 시각화가 완료되면 정답을 입력하는 칸을 보여주고 정답 여부를 판단
 
-st.set_page_config(page_title="Streamlit 요소 데모", layout="wide")
+st.set_page_config(page_title="초등 곱셈 학습 앱", layout="centered")
 
-st.title("📚 Streamlit 한 페이지 요소 모음")
+st.title("🧮 초등 곱셈 학습 앱")
+st.write("아래에서 두 숫자를 입력하고 그림을 선택한 뒤 '시각화' 버튼을 눌러보세요.")
 
-# 간단한 텍스트 요소
-st.header("텍스트 요소")
-st.subheader("기본 텍스트와 마크다운")
-st.write("`st.write()`는 거의 모든 타입을 렌더링합니다 — 문자열, 숫자, 데이터프레임 등.")
-st.markdown("**Markdown**을 사용해 더 풍부한 텍스트를 표시할 수 있습니다.")
-st.caption("이것은 캡션 텍스트입니다. 도움말이나 출처 표시에 유용합니다.")
+# --- 입력 영역 ---
+# 두 수는 0~12 범위로 제한 (초등 수준)
+col_a, col_b = st.columns(2)
+with col_a:
+    a = st.number_input("첫 번째 수 (행)", min_value=0, max_value=12, value=3, step=1)
+with col_b:
+    b = st.number_input("두 번째 수 (열)", min_value=0, max_value=12, value=4, step=1)
 
-# 코드, 라텍스
-st.subheader("코드와 수식")
-code_example = """def hello(name):\n    return f'Hello {name}'"""
-st.code(code_example, language="python")  # 코드 블록 표시
-st.latex(r"E = mc^2")  # 수식 표시 (KaTeX 사용)
+# 사용자가 선택할 수 있는 그림 목록 (이모지 사용, 이미지 URL 대신 이모지를 사용하면 별도 파일 불필요)
+emoji_options = {
+    "사과 🍎": "🍎",
+    "별 ⭐": "⭐",
+    "강아지 🐶": "🐶",
+    "쿠키 🍪": "🍪"
+}
+choice_label = st.selectbox("시각화에 사용할 그림을 선택하세요", list(emoji_options.keys()))
+emoji = emoji_options[choice_label]
 
-# 미디어
-st.header("미디어")
-st.image("https://static.streamlit.io/examples/dog.jpg", caption="예시 이미지")
-st.audio("https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav")
+# 시각화 버튼: 눌러야 시각화와 정답 입력란이 등장하도록 함
+if "visualized" not in st.session_state:
+    st.session_state.visualized = False
 
-# 입력 위젯
-st.header("입력 위젯")
-with st.expander("입력 위젯 모음 (펼치기)"):
-    # 체크박스: 단순한 on/off
-    cb = st.checkbox("동의합니다")
-    # 라디오 버튼: 단일 선택
-    choice = st.radio("옵션 선택:", ("옵션 A", "옵션 B", "옵션 C"))
-    # 셀렉트박스: 드롭다운 단일 선택
-    sel = st.selectbox("과일 선택", ["사과", "바나나", "체리"])
-    # 멀티셀렉트: 다중 선택
-    multi = st.multiselect("여러 항목 선택", ["파이썬", "자바스크립트", "Go", "Rust"], default=["파이썬"]) 
-    # 슬라이더: 범위 또는 단일 값
-    val = st.slider("값 선택", 0, 100, 25)
-    # 숫자 입력
-    n = st.number_input("숫자 입력", min_value=0, max_value=1000, value=10)
-    # 텍스트 입력 / 텍스트 영역
-    txt = st.text_input("한 줄 텍스트", "안녕하세요")
-    ta = st.text_area("여러 줄 텍스트", "여기에 메모를 입력하세요.")
-    # 날짜/시간 입력
-    d = st.date_input("날짜 선택", datetime.date.today())
-    t = st.time_input("시간 선택", datetime.time(12, 30))
-    # 색상 선택
-    c = st.color_picker("색 선택", "#00f900")
-    # 파일 업로더
-    fu = st.file_uploader("파일 업로드", type=["png", "jpg", "csv", "txt"]) 
+if st.button("시각화"):
+    # 시각화 버튼을 누르면 상태를 True로 설정하고 화면에 그림을 그리도록 함
+    st.session_state.visualized = True
+    st.session_state.last_a = int(a)
+    st.session_state.last_b = int(b)
+    st.session_state.emoji = emoji
 
-# 버튼과 액션
-st.header("버튼과 상호작용")
-if st.button("클릭하세요"):
-    st.success("버튼이 클릭되었습니다!")
+# '다시하기' 버튼: 세션 상태 초기화
+if st.session_state.get("visualized", False):
+    if st.button("다시하기"):
+        st.session_state.visualized = False
 
-if st.button("임시 로딩 시연"):
-    with st.spinner("처리중..."):
-        import time
-        time.sleep(1)
-    st.info("처리 완료")
+# --- 시각화 영역 ---
+if st.session_state.get("visualized", False):
+    rows = st.session_state.last_a
+    cols = st.session_state.last_b
+    symbol = st.session_state.emoji
 
-# 데이터 표시
-st.header("데이터 표시")
-df = pd.DataFrame(np.random.randn(10, 3), columns=["a", "b", "c"])  # 예시 데이터
-st.dataframe(df)  # 상호작용 가능한 데이터프레임
-st.table(df.head())  # 정적 테이블
-st.json({"name": "streamlit", "type": "demo"})  # JSON 표시
+    st.markdown(f"### {rows} x {cols} = ? (그림으로 확인해보세요)")
 
-# 차트 예제
-st.header("차트와 지도")
-st.line_chart(df)  # 간단한 라인 차트
-st.area_chart(df)  # 에어리어 차트
-st.bar_chart(df.abs())  # 바 차트
+    # 행(row) 단위로 컬럼을 생성해 그림을 배치
+    # 주의: 너무 큰 수일 경우(예: 12x12) 컬럼 생성으로 레이아웃이 복잡해질 수 있음
+    for i in range(rows):
+        row_cols = st.columns(cols if cols>0 else 1)
+        for j, rc in enumerate(row_cols):
+            # 각 칸에 이모지를 크게 표시 (HTML 사용)
+            rc.markdown(f"<div style='font-size:36px; text-align:center;'>{symbol}</div>", unsafe_allow_html=True)
 
-# 지도: 위도/경도 데이터가 필요
-map_data = pd.DataFrame(
-    np.random.randn(100, 2) / [50, 50] + [37.76, -122.4],
-    columns=["lat", "lon"]
-)
-st.map(map_data)
+    # 곱셈 결과를 사용자가 입력하도록 함
+    st.write("")
+    st.markdown("**이제 아래에 곱셈 결과(정답)를 입력하고 제출하세요.**")
+    answer = st.number_input("곱셈 결과를 입력하세요", min_value=0, max_value=144, step=1, key="answer_input")
+    if st.button("제출"):
+        correct = rows * cols
+        if answer == correct:
+            st.success(f"정답입니다! {rows} x {cols} = {correct}")
+        else:
+            st.error(f"틀렸습니다. 다시 확인해보세요. (입력: {answer})")
 
-# 고급 위젯 및 배치
-st.header("레이아웃: 칼럼과 익스팬더")
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric("온도", "23°C", "+1.2°C")  # KPI 형태의 메트릭
-with col2:
-    st.selectbox("도시", ["Seoul", "Busan", "Daegu"])  # 컬럼 내 위젯
-with col3:
-    st.button("열 버튼")
+else:
+    st.info("시각화 버튼을 눌러 선택한 그림으로 결과를 확인하세요.")
 
-with st.expander("추가 설명 (펼쳐보기)"):
-    st.write("이 패널에 더 많은 설명이나 문서 링크를 넣을 수 있습니다.")
+# 학습 보조: 정답을 바로 확인하고 싶을 때 보여주는 토글 (교사용 힌트)
+with st.expander("교사용 힌트(정답 보기)"):
+    st.write("정답을 바로 확인하려면 아래 버튼을 누르세요.")
+    if st.button("정답 보기 (교사용)"):
+        st.warning("정답을 표시합니다: ")
+        st.write(f"{a} × {b} = {int(a)*int(b)}")
 
-# 다운로드 버튼: 문자열/바이트/파일 다운로드 제공
-st.header("다운로드")
-st.download_button("텍스트 다운로드", data="Hello Streamlit", file_name="hello.txt")
 
-# 상태/알림
-st.header("상태 표시")
-st.success("성공 메시지 예시")
-st.info("정보 메시지 예시")
-st.warning("경고 메시지 예시")
-st.error("에러 메시지 예시")
-
-# 사이드바 예시: 페이지와 분리된 입력 영역
-st.sidebar.header("사이드바")
-st.sidebar.write("사이드바에는 설정이나 필터를 두는 것이 일반적입니다.")
-sb = st.sidebar.slider("사이드바 슬라이더", 0, 10, 3)
-
-# 팁: 코드 학습용 주석
-# 각 함수의 문법과 인자, 반환형은 공식 문서를 참고하세요: https://docs.streamlit.io/
-
-st.write("---")
-st.caption("예제 페이지 끝 — 위젯을 직접 클릭/조작해 보세요.")
